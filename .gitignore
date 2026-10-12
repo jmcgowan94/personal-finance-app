@@ -1,0 +1,28 @@
+# Your financial data never belongs in git
+data/
+*.csv
+*.CSV
+!backend/tests/fixtures/*.csv
+*.db
+*.sqlite
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+.tools/
