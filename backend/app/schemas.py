@@ -9,6 +9,13 @@ class ORM(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class Input(BaseModel):
+    """Base for request bodies. Unknown fields are rejected (422) rather than silently
+    ignored, so a frontend/backend mismatch shows an error instead of a no-op save."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
 AccountType = Literal["checking", "savings", "credit", "other"]
 CategoryKind = Literal["expense", "income", "transfer"]
 MatchType = Literal["contains", "regex"]
@@ -26,7 +33,7 @@ class UserOut(ORM):
 RangePreset = Literal["3m", "6m", "12m", "ytd", "all"]
 
 
-class UserPatch(BaseModel):
+class UserPatch(Input):
     first_name: str | None = Field(default=None, max_length=100)
     last_name: str | None = Field(default=None, max_length=100)
     # null = follow the device's light/dark setting
@@ -35,7 +42,7 @@ class UserPatch(BaseModel):
     default_range: RangePreset | None = None
 
 
-class AccountIn(BaseModel):
+class AccountIn(Input):
     name: str = Field(min_length=1, max_length=100)
     institution: str = Field(default="", max_length=100)
     account_type: AccountType = "checking"
@@ -69,12 +76,12 @@ class UploadOut(ORM):
     created_at: datetime
 
 
-class CategoryIn(BaseModel):
+class CategoryIn(Input):
     name: str = Field(min_length=1, max_length=100)
     kind: CategoryKind = "expense"
 
 
-class CategoryPatch(BaseModel):
+class CategoryPatch(Input):
     name: str | None = Field(default=None, min_length=1, max_length=100)
     kind: CategoryKind | None = None
 
@@ -85,14 +92,14 @@ class CategoryOut(ORM):
     kind: str
 
 
-class RuleIn(BaseModel):
+class RuleIn(Input):
     category_id: int
     pattern: str = Field(min_length=1, max_length=255)
     match_type: MatchType = "contains"
     priority: int = 0
 
 
-class RulePatch(BaseModel):
+class RulePatch(Input):
     category_id: int | None = None
     pattern: str | None = Field(default=None, min_length=1, max_length=255)
     match_type: MatchType | None = None
@@ -132,7 +139,7 @@ class TransactionPage(BaseModel):
     page_size: int
 
 
-class TransactionPatch(BaseModel):
+class TransactionPatch(Input):
     category_id: int | None
 
 

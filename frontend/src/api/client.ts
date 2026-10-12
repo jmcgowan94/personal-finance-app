@@ -37,7 +37,15 @@ async function errorMessage(res: Response): Promise<string> {
   try {
     const body = await res.json();
     if (typeof body.detail === "string") return body.detail;
-    if (Array.isArray(body.detail)) return body.detail.map((d: { msg: string }) => d.msg).join("; ");
+    if (Array.isArray(body.detail)) {
+      // Validation errors: name the field, e.g. "default_range: Extra inputs are not permitted".
+      return body.detail
+        .map((d: { msg: string; loc?: (string | number)[] }) => {
+          const field = d.loc?.[d.loc.length - 1];
+          return typeof field === "string" && field !== "body" ? `${field}: ${d.msg}` : d.msg;
+        })
+        .join("; ");
+    }
   } catch {
     // fall through
   }

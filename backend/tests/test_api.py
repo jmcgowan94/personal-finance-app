@@ -191,3 +191,10 @@ def test_default_time_window_preference(client):
     client.patch("/api/me", json={"theme": "dark"})
     assert client.get("/api/me").json()["default_range"] == "12m"
     assert client.patch("/api/me", json={"default_range": "2y"}).status_code == 422
+
+
+def test_unknown_fields_are_rejected(client):
+    resp = client.patch("/api/me", json={"first_name": "Ada", "favourite_colour": "blue"})
+    assert resp.status_code == 422
+    assert client.get("/api/me").json()["first_name"] is None  # nothing was saved
+    assert client.post("/api/accounts", json={"name": "Checking", "colour": "red"}).status_code == 422
