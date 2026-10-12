@@ -15,6 +15,8 @@ export interface User {
   theme: ThemePreference;
   /** Dashboard time window on launch; null = all time */
   default_range: RangePreset | null;
+  /** Account the pages start filtered to; null = all accounts */
+  default_account_id: number | null;
 }
 
 export type ThemePreference = "light" | "dark" | null;

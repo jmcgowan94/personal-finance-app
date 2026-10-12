@@ -74,7 +74,11 @@ export function App() {
   }, [open]);
 
   return (
-    <FiltersProvider defaultRange={me.data?.default_range ?? "all"} ready={!me.isPending}>
+    <FiltersProvider
+      defaultRange={me.data?.default_range ?? "all"}
+      defaultAccountId={me.data?.default_account_id ?? null}
+      ready={!me.isPending}
+    >
       <header className="topbar">
         <div className="topbar-start">
           <button

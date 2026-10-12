@@ -211,3 +211,18 @@ def test_version_reports_running_code(client, monkeypatch):
     monkeypatch.setenv("APP_COMMIT", "0123456789abcdef")
     assert v.app_commit() == "0123456"
     v.app_commit.cache_clear()
+
+
+def test_default_account_preference(clients):
+    alice, bob = clients("alice"), clients("bob")
+    assert alice.get("/api/me").json()["default_account_id"] is None  # all accounts
+    account = alice.post("/api/accounts", json={"name": "Checking"}).json()
+    assert alice.patch("/api/me", json={"default_account_id": account["id"]}).json()["default_account_id"] == account["id"]
+    alice.patch("/api/me", json={"default_range": "6m"})
+    assert alice.get("/api/me").json()["default_account_id"] == account["id"]
+    assert alice.patch("/api/me", json={"default_account_id": None}).json()["default_account_id"] is None
+
+    # Someone else's account (or one that doesn't exist) can't be the default.
+    assert bob.patch("/api/me", json={"default_account_id": account["id"]}).status_code == 404
+    assert bob.patch("/api/me", json={"default_account_id": 99999}).status_code == 404
+    assert bob.get("/api/me").json()["default_account_id"] is None

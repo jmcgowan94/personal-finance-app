@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.db import get_db
-from app.models import User
+from app.models import Account, User
 from app.schemas import UserOut, UserPatch
+from app.services.ownership import get_owned
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -24,5 +25,9 @@ def update_me(body: UserPatch, user: User = Depends(get_current_user), db: Sessi
     for key in ("theme", "default_range"):
         if key in changes:
             setattr(user, key, changes[key])
+    if "default_account_id" in changes:
+        if changes["default_account_id"] is not None:
+            get_owned(db, Account, changes["default_account_id"], user.id)
+        user.default_account_id = changes["default_account_id"]
     db.commit()
     return user

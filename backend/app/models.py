@@ -50,6 +50,11 @@ class User(Base):
     theme: Mapped[str | None] = mapped_column(String(10))
     # Dashboard time window on launch: "3m" | "6m" | "12m" | "ytd" | "all"; null means "all".
     default_range: Mapped[str | None] = mapped_column(String(10))
+    # Account the Dashboard and Transactions start filtered to; null means all accounts.
+    # use_alter: users and accounts reference each other.
+    default_account_id: Mapped[int | None] = mapped_column(
+        ForeignKey("accounts.id", ondelete="SET NULL", use_alter=True)
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

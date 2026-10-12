@@ -28,6 +28,7 @@ class UserOut(ORM):
     last_name: str | None
     theme: str | None
     default_range: str | None
+    default_account_id: int | None
 
 
 RangePreset = Literal["3m", "6m", "12m", "ytd", "all"]
@@ -40,6 +41,8 @@ class UserPatch(Input):
     theme: Literal["light", "dark"] | None = None
     # Dashboard time window on launch; null = all time
     default_range: RangePreset | None = None
+    # Account the pages start filtered to; null = all accounts
+    default_account_id: int | None = None
 
 
 class AccountIn(Input):

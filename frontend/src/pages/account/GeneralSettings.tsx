@@ -1,4 +1,4 @@
-import { useMe, useUpdateMe } from "../../api/hooks";
+import { useAccounts, useMe, useUpdateMe } from "../../api/hooks";
 import type { ThemePreference } from "../../api/types";
 import { RANGE_PRESETS, type RangePreset } from "../../lib/filters";
 import { applyTheme } from "../../lib/theme";
@@ -12,6 +12,7 @@ const THEME_OPTIONS: { value: string; label: string; pref: ThemePreference }[] =
 export function GeneralSettings() {
   const { data: me } = useMe();
   const update = useUpdateMe();
+  const { data: accounts = [] } = useAccounts();
 
   function setTheme(value: string) {
     const theme = THEME_OPTIONS.find((o) => o.value === value)?.pref ?? null;
@@ -47,6 +48,25 @@ export function GeneralSettings() {
           {RANGE_PRESETS.map((p) => (
             <option key={p.value} value={p.value}>
               {p.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="setting-row" style={{ marginTop: 16 }}>
+        <div>
+          <label htmlFor="default-account">Default Account</label>
+          <p className="muted setting-hint">The account the Dashboard and Transactions start filtered to.</p>
+        </div>
+        <select
+          id="default-account"
+          value={me?.default_account_id ?? ""}
+          disabled={!me}
+          onChange={(e) => update.mutate({ default_account_id: e.target.value ? Number(e.target.value) : null })}
+        >
+          <option value="">All accounts</option>
+          {accounts.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name}
             </option>
           ))}
         </select>

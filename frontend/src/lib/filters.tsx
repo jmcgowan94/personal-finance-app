@@ -45,30 +45,34 @@ const FiltersContext = createContext<{
 } | null>(null);
 
 /**
- * The time window starts at the user's saved Default Time Window. Picking another
- * one on a page applies for the rest of the visit without changing the default.
+ * The time window and account start at the user's saved defaults (General Settings).
+ * Picking others on a page applies for the rest of the visit without changing them.
  */
 export function FiltersProvider({
   defaultRange,
+  defaultAccountId,
   ready,
   children,
 }: {
   defaultRange: RangePreset;
+  defaultAccountId: number | null;
   ready: boolean;
   children: ReactNode;
 }) {
+  // null = not chosen this visit, so the saved default applies.
   const [chosenRange, setChosenRange] = useState<RangePreset | null>(null);
-  const [accountId, setAccountId] = useState<number | null>(null);
+  // Wrapped because null ("All accounts") is itself a valid choice.
+  const [chosenAccount, setChosenAccount] = useState<{ id: number | null } | null>(null);
   const value = useMemo(
     () => ({
-      filters: { range: chosenRange ?? defaultRange, accountId },
+      filters: { range: chosenRange ?? defaultRange, accountId: chosenAccount ? chosenAccount.id : defaultAccountId },
       setFilters: (f: DashboardFilters) => {
         setChosenRange(f.range);
-        setAccountId(f.accountId);
+        setChosenAccount({ id: f.accountId });
       },
       ready,
     }),
-    [chosenRange, defaultRange, accountId, ready],
+    [chosenRange, defaultRange, chosenAccount, defaultAccountId, ready],
   );
   return <FiltersContext.Provider value={value}>{children}</FiltersContext.Provider>;
 }
