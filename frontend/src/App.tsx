@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
-import { UserMenu } from "./components/UserMenu";
 import { Account } from "./pages/Account";
 import { Categories } from "./pages/Categories";
 import { Dashboard } from "./pages/Dashboard";
@@ -86,7 +85,6 @@ export function App() {
             Personal Finance App
           </Link>
         </div>
-        <UserMenu />
       </header>
       <div className="layout">
         <aside
@@ -103,6 +101,9 @@ export function App() {
             <NavLink to="/transactions">Transactions</NavLink>
             <NavLink to="/import">Import</NavLink>
             <NavLink to="/categories">Categories</NavLink>
+          </nav>
+          <nav className="nav sidebar-footer" aria-label="Account">
+            <NavLink to="/account">Account Settings</NavLink>
           </nav>
         </aside>
         {open && mode === "click" && <div className="scrim" onClick={() => setOpen(false)} />}

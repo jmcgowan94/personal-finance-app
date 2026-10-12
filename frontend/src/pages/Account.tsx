@@ -20,7 +20,7 @@ export function Account() {
   return (
     <>
       <div className="page-header">
-        <h1>Account</h1>
+        <h1>Account Settings</h1>
       </div>
       <section className="card">
         {isError && <p className="error">Could not load your account: {error.message}</p>}
