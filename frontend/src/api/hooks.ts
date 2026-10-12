@@ -119,11 +119,12 @@ export function useDeleteUpload() {
   });
 }
 
-export function useSetTransactionCategory() {
+/** Change a transaction's category and/or use date (null use_date = reset to posting date). */
+export function useUpdateTransaction() {
   const invalidate = useInvalidateData();
   return useMutation({
-    mutationFn: ({ id, categoryId }: { id: number; categoryId: number | null }) =>
-      api.patch(`/transactions/${id}`, { category_id: categoryId }),
+    mutationFn: ({ id, ...changes }: { id: number; category_id?: number | null; use_date?: string | null }) =>
+      api.patch(`/transactions/${id}`, changes),
     onSuccess: () => invalidate(),
   });
 }

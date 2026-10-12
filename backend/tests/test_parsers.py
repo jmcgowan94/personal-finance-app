@@ -20,7 +20,7 @@ def test_detects_chase_checking_with_bom_and_trailing_commas():
 def test_checking_rows_are_oldest_first_and_keep_same_day_order():
     result = REGISTRY["chase_checking"].parse(decode(fixture_bytes("chase_checking.csv")))
     txns = result.transactions
-    assert txns[0].posted_date == date(2026, 1, 2)
+    assert txns[0].posting_date == date(2026, 1, 2)
     assert txns[0].amount == Decimal("2500.00")
     assert txns[0].balance == Decimal("3499.55")
     # The file is newest first; within 02/03 the trip happened before the meal.

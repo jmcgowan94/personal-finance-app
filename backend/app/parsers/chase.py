@@ -21,7 +21,7 @@ class ChaseCheckingParser(StatementParser):
         if not row["Description"]:
             raise ValueError("missing description")
         return ParsedTransaction(
-            posted_date=parse_us_date(row["Posting Date"]),
+            posting_date=parse_us_date(row["Posting Date"]),
             description=row["Description"],
             amount=parse_money(row["Amount"]),
             txn_type=blank_to_none(row.get("Type", "")),
@@ -42,7 +42,7 @@ class ChaseCreditParser(StatementParser):
         if not row["Description"]:
             raise ValueError("missing description")
         return ParsedTransaction(
-            posted_date=parse_us_date(row["Post Date"]),
+            posting_date=parse_us_date(row["Post Date"]),
             description=row["Description"],
             amount=parse_money(row["Amount"]),
             txn_type=blank_to_none(row.get("Type", "")),

@@ -1,5 +1,8 @@
 """Aggregations behind the dashboard.
 
+Transactions are counted under their use date (which the user can adjust), except
+balances, which follow the bank's posting date.
+
 Totals exclude transactions in "transfer" categories (moving money between your own
 accounts, paying a card) so they are not counted as income or spending.
 """
@@ -24,12 +27,12 @@ class Filters:
     account_id: int | None = None
 
 
-def _apply(stmt: Select, f: Filters, *, exclude_transfers: bool = True) -> Select:
+def _apply(stmt: Select, f: Filters, *, exclude_transfers: bool = True, date_column=Transaction.use_date) -> Select:
     stmt = stmt.where(Transaction.user_id == f.user_id)
     if f.date_from:
-        stmt = stmt.where(Transaction.posted_date >= f.date_from)
+        stmt = stmt.where(date_column >= f.date_from)
     if f.date_to:
-        stmt = stmt.where(Transaction.posted_date <= f.date_to)
+        stmt = stmt.where(date_column <= f.date_to)
     if f.account_id:
         stmt = stmt.where(Transaction.account_id == f.account_id)
     if exclude_transfers:
@@ -60,8 +63,8 @@ def summary(db: Session, f: Filters) -> dict:
 
 
 def monthly(db: Session, f: Filters) -> list[dict]:
-    year = extract("year", Transaction.posted_date)
-    month = extract("month", Transaction.posted_date)
+    year = extract("year", Transaction.use_date)
+    month = extract("month", Transaction.use_date)
     stmt = _apply(select(year, month, _income, _spend), f).group_by(year, month).order_by(year, month)
     out = []
     for y, m, income, spending in db.execute(stmt):
@@ -94,11 +97,12 @@ def by_category(db: Session, f: Filters) -> list[dict]:
 def balance_history(db: Session, f: Filters) -> list[dict]:
     """End-of-day balance per account, for accounts whose statements report a balance."""
     stmt = _apply(
-        select(Transaction.account_id, Transaction.posted_date, Transaction.balance),
+        select(Transaction.account_id, Transaction.posting_date, Transaction.balance),
         f,
         exclude_transfers=False,
+        date_column=Transaction.posting_date,
     ).where(Transaction.balance.is_not(None)).order_by(
-        Transaction.account_id, Transaction.posted_date, Transaction.upload_id, Transaction.sequence
+        Transaction.account_id, Transaction.posting_date, Transaction.upload_id, Transaction.sequence
     )
     series: dict[int, dict[date, Decimal]] = {}
     for account_id, day, balance in db.execute(stmt):

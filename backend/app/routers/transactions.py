@@ -27,9 +27,9 @@ def list_transactions(
 ):
     stmt = select(Transaction).where(Transaction.user_id == user.id)
     if date_from:
-        stmt = stmt.where(Transaction.posted_date >= date_from)
+        stmt = stmt.where(Transaction.use_date >= date_from)
     if date_to:
-        stmt = stmt.where(Transaction.posted_date <= date_to)
+        stmt = stmt.where(Transaction.use_date <= date_to)
     if account_id:
         stmt = stmt.where(Transaction.account_id == account_id)
     if category_id == 0:
@@ -42,7 +42,8 @@ def list_transactions(
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
     items = db.scalars(
         stmt.order_by(
-            Transaction.posted_date.desc(),
+            Transaction.use_date.desc(),
+            Transaction.posting_date.desc(),
             Transaction.upload_id.desc(),
             Transaction.sequence.desc(),
         )
@@ -59,12 +60,18 @@ def update_transaction(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Set a transaction's category by hand. Rules will no longer change it,
-    unless the category is cleared (set to null)."""
+    """Change a transaction's category and/or use date.
+
+    - category_id: set by hand; rules then leave it alone, unless cleared (null).
+    - use_date: the date it counts under; null resets it to the posting date.
+    """
     txn = get_owned(db, Transaction, transaction_id, user.id)
-    if body.category_id is not None:
-        get_owned(db, Category, body.category_id, user.id)
-    txn.category_id = body.category_id
-    txn.category_locked = body.category_id is not None
+    if "category_id" in body.model_fields_set:
+        if body.category_id is not None:
+            get_owned(db, Category, body.category_id, user.id)
+        txn.category_id = body.category_id
+        txn.category_locked = body.category_id is not None
+    if "use_date" in body.model_fields_set:
+        txn.use_date = body.use_date or txn.posting_date
     db.commit()
     return txn

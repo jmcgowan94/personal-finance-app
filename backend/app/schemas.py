@@ -124,7 +124,8 @@ class ApplyRulesOut(BaseModel):
 class TransactionOut(ORM):
     id: int
     account_id: int
-    posted_date: date
+    posting_date: date
+    use_date: date
     description: str
     amount: Decimal
     txn_type: str | None
@@ -143,7 +144,10 @@ class TransactionPage(BaseModel):
 
 
 class TransactionPatch(Input):
-    category_id: int | None
+    # Only the fields sent are changed.
+    category_id: int | None = None
+    # null = reset to the posting date
+    use_date: date | None = None
 
 
 class Summary(BaseModel):

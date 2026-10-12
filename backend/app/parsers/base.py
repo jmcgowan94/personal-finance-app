@@ -20,7 +20,7 @@ class ParseError(Exception):
 
 @dataclass
 class ParsedTransaction:
-    posted_date: date
+    posting_date: date
     description: str
     amount: Decimal  # negative = money out
     txn_type: str | None = None
@@ -71,9 +71,9 @@ class StatementParser(ABC):
         txns = result.transactions
         # Banks often export newest first; normalise to oldest first while keeping
         # the relative order of same-day rows (needed for running balances).
-        if len(txns) > 1 and txns[0].posted_date > txns[-1].posted_date:
+        if len(txns) > 1 and txns[0].posting_date > txns[-1].posting_date:
             txns.reverse()
-        txns.sort(key=lambda t: t.posted_date)
+        txns.sort(key=lambda t: t.posting_date)
         return result
 
 

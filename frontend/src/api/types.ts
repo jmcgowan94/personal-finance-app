@@ -65,7 +65,10 @@ export interface CategoryRule {
 export interface Transaction {
   id: number;
   account_id: number;
-  posted_date: string;
+  /** Date the bank posted it */
+  posting_date: string;
+  /** Date it counts under; starts as the posting date, adjustable */
+  use_date: string;
   description: string;
   amount: string;
   txn_type: string | null;

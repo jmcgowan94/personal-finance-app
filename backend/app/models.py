@@ -130,7 +130,8 @@ class Transaction(UserOwned, Base):
     __tablename__ = "transactions"
     __table_args__ = (
         UniqueConstraint("user_id", "dedupe_hash"),
-        Index("ix_transactions_user_date", "user_id", "posted_date"),
+        Index("ix_transactions_user_date", "user_id", "posting_date"),
+        Index("ix_transactions_user_use_date", "user_id", "use_date"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -140,7 +141,11 @@ class Transaction(UserOwned, Base):
     upload_id: Mapped[int] = mapped_column(
         ForeignKey("uploads.id", ondelete="CASCADE"), index=True
     )
-    posted_date: Mapped[date] = mapped_column(Date)
+    # Date the bank posted it. Never changes; used for balances and de-duplication.
+    posting_date: Mapped[date] = mapped_column(Date)
+    # Date the app counts it under (totals, charts, filters). Starts equal to the
+    # posting date; the user can move it, e.g. a paycheck paid early for a weekend.
+    use_date: Mapped[date] = mapped_column(Date)
     # Chronological position within its upload; orders same-day rows.
     sequence: Mapped[int] = mapped_column(Integer, default=0)
     description: Mapped[str] = mapped_column(String(500))

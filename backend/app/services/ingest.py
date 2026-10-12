@@ -21,7 +21,7 @@ def dedupe_hash(account_id: int, txn: ParsedTransaction, occurrence: int) -> str
     """
     parts = [
         str(account_id),
-        txn.posted_date.isoformat(),
+        txn.posting_date.isoformat(),
         str(txn.amount),
         txn.description,
         "" if txn.balance is None else str(txn.balance),
@@ -58,7 +58,7 @@ def import_statement(
     seen: Counter[tuple] = Counter()
     hashed: list[tuple[str, ParsedTransaction]] = []
     for txn in result.transactions:
-        key = (txn.posted_date, txn.amount, txn.description, txn.balance)
+        key = (txn.posting_date, txn.amount, txn.description, txn.balance)
         hashed.append((dedupe_hash(account.id, txn, seen[key]), txn))
         seen[key] += 1
 
@@ -93,7 +93,8 @@ def import_statement(
                 user_id=user_id,
                 account_id=account.id,
                 upload_id=upload.id,
-                posted_date=txn.posted_date,
+                posting_date=txn.posting_date,
+                use_date=txn.posting_date,
                 sequence=sequence,
                 description=txn.description[:500],
                 amount=txn.amount,

@@ -226,3 +226,49 @@ def test_default_account_preference(clients):
     assert bob.patch("/api/me", json={"default_account_id": account["id"]}).status_code == 404
     assert bob.patch("/api/me", json={"default_account_id": 99999}).status_code == 404
     assert bob.get("/api/me").json()["default_account_id"] is None
+
+
+def test_use_date_moves_a_transaction_between_months(client):
+    upload(client, "chase_checking.csv")
+    txns = client.get("/api/transactions", params={"q": "PAYROLL"}).json()["items"]
+    feb_pay = next(t for t in txns if t["posting_date"] == "2026-02-01")
+    jan_pay = next(t for t in txns if t["posting_date"] == "2026-01-02")
+    assert feb_pay["use_date"] == feb_pay["posting_date"]  # defaults to the posting date
+
+    # Move the Jan 2 paycheck into December.
+    resp = client.patch(f"/api/transactions/{jan_pay['id']}", json={"use_date": "2025-12-31"})
+    assert resp.status_code == 200
+    assert (resp.json()["posting_date"], resp.json()["use_date"]) == ("2026-01-02", "2025-12-31")
+    assert resp.json()["category_id"] == jan_pay["category_id"]  # untouched
+
+    monthly = {m["month"]: Decimal(m["income"]) for m in client.get("/api/analytics/monthly").json()}
+    assert monthly == {"2025-12": Decimal("2500.00"), "2026-01": Decimal("0.00"), "2026-02": Decimal("2500.00")}
+    jan = client.get("/api/transactions", params={"date_from": "2026-01-01", "date_to": "2026-01-31", "q": "PAYROLL"})
+    assert jan.json()["total"] == 0  # list filters follow the use date too
+
+    # Balances still follow the bank's posting date.
+    points = {p["date"] for p in client.get("/api/analytics/balance").json()[0]["points"]}
+    assert "2026-01-02" in points and "2025-12-31" not in points
+
+    # Setting a category leaves the use date alone; null resets it.
+    client.patch(f"/api/transactions/{jan_pay['id']}", json={"category_id": None})
+    assert client.get("/api/transactions", params={"q": "PAYROLL", "date_to": "2025-12-31"}).json()["total"] == 1
+    reset = client.patch(f"/api/transactions/{jan_pay['id']}", json={"use_date": None}).json()
+    assert reset["use_date"] == "2026-01-02"
+
+
+def test_reimport_keeps_adjusted_use_dates(client):
+    upload(client, "chase_checking.csv")
+    txn = client.get("/api/transactions", params={"q": "RENT"}).json()["items"][0]
+    client.patch(f"/api/transactions/{txn['id']}", json={"use_date": "2026-01-01"})
+    resp, _ = upload(client, "chase_checking.csv")
+    assert resp.json()["rows_imported"] == 0
+    assert client.get("/api/transactions", params={"q": "RENT"}).json()["items"][0]["use_date"] == "2026-01-01"
+
+
+def test_cannot_change_another_users_use_date(clients):
+    alice, bob = clients("alice"), clients("bob")
+    upload(alice, "chase_checking.csv")
+    txn = alice.get("/api/transactions").json()["items"][0]
+    assert bob.patch(f"/api/transactions/{txn['id']}", json={"use_date": "2020-01-01"}).status_code == 404
+    assert alice.get("/api/transactions").json()["items"][0]["use_date"] == txn["use_date"]

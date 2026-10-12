@@ -56,5 +56,9 @@ def test_upgrading_a_populated_database_keeps_every_row(tmp_path):
         alembic(db, "upgrade", rev)
         assert counts(db) == before, f"rows lost upgrading to {rev}"
 
+    with sqlite3.connect(db) as conn:
+        # Use date starts out equal to the bank's posting date.
+        assert conn.execute("select posting_date, use_date from transactions").fetchall() == [("2026-01-01", "2026-01-01")]
+
     alembic(db, "downgrade", "0001")
     assert counts(db) == before, "rows lost downgrading"

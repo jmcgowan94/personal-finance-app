@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { useAccounts, useCategories, useSetTransactionCategory, useTransactions } from "../api/hooks";
+import { useAccounts, useCategories, useTransactions, useUpdateTransaction } from "../api/hooks";
+import type { Transaction } from "../api/types";
 import { FiltersBar } from "../components/FiltersBar";
 import { rangeStart, useFilters } from "../lib/filters";
 import { formatDate, formatMoney, toNumber } from "../lib/format";
@@ -27,7 +28,7 @@ export function Transactions() {
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const accountName = useMemo(() => new Map(accounts.map((a) => [a.id, a.name])), [accounts]);
-  const setCategory = useSetTransactionCategory();
+  const updateTxn = useUpdateTransaction();
 
   const { data, isError, error, isFetching } = useTransactions({
     date_from: rangeStart(filters.range),
@@ -79,12 +80,17 @@ export function Transactions() {
 
       <section className="card">
         {isError && <p className="error">Could not load transactions: {error.message}</p>}
-        {setCategory.isError && <p className="error">{setCategory.error.message}</p>}
+        {updateTxn.isError && <p className="error">{updateTxn.error.message}</p>}
         <div className="table-wrap" style={{ opacity: isFetching ? 0.7 : 1 }}>
           <table>
             <thead>
               <tr>
-                <th>Date</th>
+                <th>Posting Date</th>
+                <th>
+                  <span title="The date this transaction counts under in totals and charts. Starts as the posting date.">
+                    Use Date
+                  </span>
+                </th>
                 <th>Description</th>
                 <th>Account</th>
                 <th>Category</th>
@@ -94,7 +100,10 @@ export function Transactions() {
             <tbody>
               {rows.map((t) => (
                 <tr key={t.id}>
-                  <td className="date">{formatDate(t.posted_date)}</td>
+                  <td className="date">{formatDate(t.posting_date)}</td>
+                  <td>
+                    <UseDateCell txn={t} onSave={(useDate) => updateTxn.mutate({ id: t.id, use_date: useDate })} />
+                  </td>
                   <td className="desc">
                     {t.description}
                     {t.bank_category && <small>Bank category: {t.bank_category}</small>}
@@ -105,7 +114,7 @@ export function Transactions() {
                       aria-label={`Category for ${t.description}`}
                       value={t.category_id ?? ""}
                       onChange={(e) =>
-                        setCategory.mutate({ id: t.id, categoryId: e.target.value ? Number(e.target.value) : null })
+                        updateTxn.mutate({ id: t.id, category_id: e.target.value ? Number(e.target.value) : null })
                       }
                     >
                       <option value="">Uncategorized</option>
@@ -126,7 +135,7 @@ export function Transactions() {
               ))}
               {data?.items.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="muted" style={{ textAlign: "center", padding: 32 }}>
+                  <td colSpan={6} className="muted" style={{ textAlign: "center", padding: 32 }}>
                     No transactions match these filters.
                   </td>
                 </tr>
@@ -151,5 +160,60 @@ export function Transactions() {
         )}
       </section>
     </>
+  );
+}
+
+const USE_DATE_SAVE_DELAY_MS = 800;
+
+/**
+ * Editable use date. Saves once the user stops editing: after a short pause, on
+ * leaving the field, or on Enter. That way a date being typed digit by digit (which
+ * passes through other valid dates) is saved once, not at every step.
+ */
+function UseDateCell({ txn, onSave }: { txn: Transaction; onSave: (useDate: string | null) => void }) {
+  const [value, setValue] = useState(txn.use_date);
+  const timer = useRef<number | undefined>(undefined);
+  const latest = useRef({ value, txn, onSave });
+  latest.current = { value, txn, onSave };
+  useEffect(() => setValue(txn.use_date), [txn.use_date]);
+  const adjusted = txn.use_date !== txn.posting_date;
+
+  // Save the current value if it's a complete, changed date.
+  const flush = () => {
+    window.clearTimeout(timer.current);
+    const { value: v, txn: t, onSave: save } = latest.current;
+    if (v && Number(v.slice(0, 4)) >= 1900 && v !== t.use_date) save(v);
+  };
+  useEffect(() => flush, []); // don't lose a pending edit if the row goes away
+
+  return (
+    <span className="use-date">
+      <input
+        type="date"
+        className={adjusted ? "adjusted" : undefined}
+        aria-label={`Use date for ${txn.description}`}
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          window.clearTimeout(timer.current);
+          timer.current = window.setTimeout(flush, USE_DATE_SAVE_DELAY_MS);
+        }}
+        onBlur={() => {
+          flush();
+          if (!value) setValue(txn.use_date); // cleared field: put the saved date back
+        }}
+        onKeyDown={(e) => e.key === "Enter" && flush()}
+      />
+      {adjusted && (
+        <button
+          type="button"
+          className="link small"
+          title={`Reset to the posting date (${formatDate(txn.posting_date)})`}
+          onClick={() => onSave(null)}
+        >
+          Reset
+        </button>
+      )}
+    </span>
   );
 }
