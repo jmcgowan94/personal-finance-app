@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.0 (2026-10-12)
+
+- Add adjustable Use Date alongside the bank's Posting Date
+
 ## v0.3.1 (2026-10-12)
 
 - Page transactions chronologically, opening on the most recent page
