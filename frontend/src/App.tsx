@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import { UserMenu } from "./components/UserMenu";
 import { Account } from "./pages/Account";
@@ -66,16 +66,21 @@ export function App() {
   return (
     <>
       <header className="topbar">
-        <button
-          className="icon-button"
-          aria-label={open ? "Hide menu" : "Show menu"}
-          title={open ? "Hide menu" : "Show menu"}
-          aria-expanded={open}
-          aria-controls="sidebar"
-          onClick={toggle}
-        >
-          <SidebarIcon />
-        </button>
+        <div className="topbar-start">
+          <button
+            className="icon-button"
+            aria-label={open ? "Hide menu" : "Show menu"}
+            title={open ? "Hide menu" : "Show menu"}
+            aria-expanded={open}
+            aria-controls="sidebar"
+            onClick={toggle}
+          >
+            <SidebarIcon />
+          </button>
+          <Link to="/" className="brand">
+            Personal Finance App
+          </Link>
+        </div>
         <UserMenu />
       </header>
       <div className="layout">

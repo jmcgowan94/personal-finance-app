@@ -74,6 +74,16 @@ h2 { font-size: 15px; font-weight: 600; margin: 0; }
   top: 0;
   z-index: 30;
 }
+.topbar-start { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.brand {
+  font-weight: 650;
+  color: var(--text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brand:hover { color: var(--accent); }
 .icon-button {
   display: inline-flex;
   align-items: center;
