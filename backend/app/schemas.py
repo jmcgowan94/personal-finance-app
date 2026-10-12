@@ -20,6 +20,10 @@ class UserOut(ORM):
     first_name: str | None
     last_name: str | None
     theme: str | None
+    default_range: str | None
+
+
+RangePreset = Literal["3m", "6m", "12m", "ytd", "all"]
 
 
 class UserPatch(BaseModel):
@@ -27,6 +31,8 @@ class UserPatch(BaseModel):
     last_name: str | None = Field(default=None, max_length=100)
     # null = follow the device's light/dark setting
     theme: Literal["light", "dark"] | None = None
+    # Dashboard time window on launch; null = all time
+    default_range: RangePreset | None = None
 
 
 class AccountIn(BaseModel):

@@ -104,6 +104,7 @@ h2 { font-size: 15px; font-weight: 600; margin: 0; }
 .settings-nav { position: sticky; top: 80px; }
 
 .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.setting-hint { margin: 2px 0 0; font-size: 13px; }
 
 .sidebar {
   /* A flyout over the page, so opening it never shifts the content. */

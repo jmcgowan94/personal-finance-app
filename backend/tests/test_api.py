@@ -183,3 +183,11 @@ def test_theme_preference(client):
     assert client.get("/api/me").json()["theme"] == "dark"
     assert client.patch("/api/me", json={"theme": None}).json()["theme"] is None
     assert client.patch("/api/me", json={"theme": "blue"}).status_code == 422
+
+
+def test_default_time_window_preference(client):
+    assert client.get("/api/me").json()["default_range"] is None  # all time
+    assert client.patch("/api/me", json={"default_range": "12m"}).json()["default_range"] == "12m"
+    client.patch("/api/me", json={"theme": "dark"})
+    assert client.get("/api/me").json()["default_range"] == "12m"
+    assert client.patch("/api/me", json={"default_range": "2y"}).status_code == 422

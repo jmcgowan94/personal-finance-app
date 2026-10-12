@@ -18,12 +18,12 @@ function StatTile({ label, value, sub }: { label: string; value: string; sub?: s
 }
 
 export function Dashboard() {
-  const { filters } = useFilters();
+  const { filters, ready } = useFilters();
   const navigate = useNavigate();
-  const summary = useSummary(filters);
-  const monthly = useMonthly(filters);
-  const byCategory = useByCategory(filters);
-  const balance = useBalance(filters);
+  const summary = useSummary(filters, ready);
+  const monthly = useMonthly(filters, ready);
+  const byCategory = useByCategory(filters, ready);
+  const balance = useBalance(filters, ready);
   const { data: me } = useMe();
   // Greets by first name (from Account Information); empty until loaded so it doesn't flicker.
   const greeting = me ? `Hi ${me.first_name ?? "there"}` : "\u00a0";

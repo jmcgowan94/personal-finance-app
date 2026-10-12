@@ -24,7 +24,8 @@ export const useMe = () => useQuery({ queryKey: ["me"], queryFn: () => api.get<U
 export function useUpdateMe() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: Partial<Pick<User, "first_name" | "last_name" | "theme">>) => api.patch<User>("/me", body),
+    mutationFn: (body: Partial<Pick<User, "first_name" | "last_name" | "theme" | "default_range">>) =>
+      api.patch<User>("/me", body),
     onSuccess: (user) => qc.setQueryData(["me"], user),
   });
 }
@@ -46,25 +47,30 @@ export interface TransactionQuery {
   page_size: number;
 }
 
-export const useTransactions = (params: TransactionQuery) =>
+// `enabled` lets pages wait until the user's default time window is known.
+export const useTransactions = (params: TransactionQuery, enabled = true) =>
   useQuery({
     queryKey: ["transactions", params],
     queryFn: () => api.get<TransactionPage>("/transactions", { ...params }),
     placeholderData: keepPreviousData,
+    enabled,
   });
 
-function useAnalytics<T>(name: string, filters: DashboardFilters) {
+function useAnalytics<T>(name: string, filters: DashboardFilters, enabled: boolean) {
   return useQuery({
     queryKey: ["analytics", name, filters],
     queryFn: () => api.get<T>(`/analytics/${name}`, filterParams(filters)),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 
-export const useSummary = (f: DashboardFilters) => useAnalytics<Summary>("summary", f);
-export const useMonthly = (f: DashboardFilters) => useAnalytics<MonthlyPoint[]>("monthly", f);
-export const useByCategory = (f: DashboardFilters) => useAnalytics<CategorySpend[]>("by-category", f);
-export const useBalance = (f: DashboardFilters) => useAnalytics<BalanceSeries[]>("balance", f);
+export const useSummary = (f: DashboardFilters, enabled = true) => useAnalytics<Summary>("summary", f, enabled);
+export const useMonthly = (f: DashboardFilters, enabled = true) => useAnalytics<MonthlyPoint[]>("monthly", f, enabled);
+export const useByCategory = (f: DashboardFilters, enabled = true) =>
+  useAnalytics<CategorySpend[]>("by-category", f, enabled);
+export const useBalance = (f: DashboardFilters, enabled = true) =>
+  useAnalytics<BalanceSeries[]>("balance", f, enabled);
 
 /** Most writes change what the dashboard and transaction list show. */
 function useInvalidateData() {

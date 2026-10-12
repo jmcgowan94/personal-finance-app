@@ -1,5 +1,6 @@
 import { useMe, useUpdateMe } from "../../api/hooks";
 import type { ThemePreference } from "../../api/types";
+import { RANGE_PRESETS, type RangePreset } from "../../lib/filters";
 import { applyTheme } from "../../lib/theme";
 
 const THEME_OPTIONS: { value: string; label: string; pref: ThemePreference }[] = [
@@ -28,6 +29,24 @@ export function GeneralSettings() {
           {THEME_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="setting-row" style={{ marginTop: 16 }}>
+        <div>
+          <label htmlFor="default-range">Default Time Window</label>
+          <p className="muted setting-hint">The time window the Dashboard starts with when you open the app.</p>
+        </div>
+        <select
+          id="default-range"
+          value={me?.default_range ?? "all"}
+          disabled={!me}
+          onChange={(e) => update.mutate({ default_range: e.target.value as RangePreset })}
+        >
+          {RANGE_PRESETS.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
             </option>
           ))}
         </select>

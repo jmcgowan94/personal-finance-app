@@ -40,11 +40,36 @@ export function filterParams(f: DashboardFilters) {
 const FiltersContext = createContext<{
   filters: DashboardFilters;
   setFilters: (f: DashboardFilters) => void;
+  /** False until the user's default time window is known; queries wait for it. */
+  ready: boolean;
 } | null>(null);
 
-export function FiltersProvider({ children }: { children: ReactNode }) {
-  const [filters, setFilters] = useState<DashboardFilters>({ range: "all", accountId: null });
-  const value = useMemo(() => ({ filters, setFilters }), [filters]);
+/**
+ * The time window starts at the user's saved Default Time Window. Picking another
+ * one on a page applies for the rest of the visit without changing the default.
+ */
+export function FiltersProvider({
+  defaultRange,
+  ready,
+  children,
+}: {
+  defaultRange: RangePreset;
+  ready: boolean;
+  children: ReactNode;
+}) {
+  const [chosenRange, setChosenRange] = useState<RangePreset | null>(null);
+  const [accountId, setAccountId] = useState<number | null>(null);
+  const value = useMemo(
+    () => ({
+      filters: { range: chosenRange ?? defaultRange, accountId },
+      setFilters: (f: DashboardFilters) => {
+        setChosenRange(f.range);
+        setAccountId(f.accountId);
+      },
+      ready,
+    }),
+    [chosenRange, defaultRange, accountId, ready],
+  );
   return <FiltersContext.Provider value={value}>{children}</FiltersContext.Provider>;
 }
 

@@ -1,3 +1,5 @@
+import type { RangePreset } from "../lib/filters";
+
 // Mirrors backend/app/schemas.py. Money values arrive as decimal strings.
 
 export type AccountType = "checking" | "savings" | "credit" | "other";
@@ -11,6 +13,8 @@ export interface User {
   last_name: string | null;
   /** null = follow the device's light/dark setting */
   theme: ThemePreference;
+  /** Dashboard time window on launch; null = all time */
+  default_range: RangePreset | null;
 }
 
 export type ThemePreference = "light" | "dark" | null;

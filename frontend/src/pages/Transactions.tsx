@@ -9,7 +9,7 @@ import { formatDate, formatMoney, toNumber } from "../lib/format";
 const PAGE_SIZE = 50;
 
 export function Transactions() {
-  const { filters } = useFilters();
+  const { filters, ready } = useFilters();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category");
   const [search, setSearch] = useState("");
@@ -34,7 +34,7 @@ export function Transactions() {
     q: debounced || undefined,
     page,
     page_size: PAGE_SIZE,
-  });
+  }, ready);
 
   const pages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
 

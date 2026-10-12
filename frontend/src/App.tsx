@@ -8,6 +8,8 @@ import { Categories } from "./pages/Categories";
 import { Dashboard } from "./pages/Dashboard";
 import { Import } from "./pages/Import";
 import { Transactions } from "./pages/Transactions";
+import { useMe } from "./api/hooks";
+import { FiltersProvider } from "./lib/filters";
 import { useSyncTheme } from "./lib/theme";
 
 // Grace period so the mouse can travel from the toggle to the sidebar (and back)
@@ -25,6 +27,7 @@ function SidebarIcon() {
 
 export function App() {
   useSyncTheme();
+  const me = useMe();
   const [open, setOpen] = useState(false);
   // "hover": opened by mouse, closes when the mouse leaves.
   // "click": opened by touch or keyboard, closes on tap outside, Escape or navigation.
@@ -70,7 +73,7 @@ export function App() {
   }, [open]);
 
   return (
-    <>
+    <FiltersProvider defaultRange={me.data?.default_range ?? "all"} ready={!me.isPending}>
       <header className="topbar">
         <div className="topbar-start">
           <button
@@ -126,6 +129,6 @@ export function App() {
           </Routes>
         </main>
       </div>
-    </>
+    </FiltersProvider>
   );
 }

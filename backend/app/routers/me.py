@@ -21,7 +21,8 @@ def update_me(body: UserPatch, user: User = Depends(get_current_user), db: Sessi
     for key in ("first_name", "last_name"):
         if key in changes:
             setattr(user, key, (changes[key] or "").strip() or None)
-    if "theme" in changes:
-        user.theme = changes["theme"]
+    for key in ("theme", "default_range"):
+        if key in changes:
+            setattr(user, key, changes[key])
     db.commit()
     return user
