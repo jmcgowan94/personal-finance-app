@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.1 (2026-10-12)
+
+- Page transactions chronologically, opening on the most recent page
+
 ## v0.3.0 (2026-10-12)
 
 - Add Default Account setting; make SQLite migrations data-safe

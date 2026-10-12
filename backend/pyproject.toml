@@ -1,6 +1,6 @@
 [project]
 name = "finance-backend"
-version = "0.3.0"
+version = "0.3.1"
 description = "API for importing and analysing bank statement CSVs"
 requires-python = ">=3.12"
 dependencies = [
