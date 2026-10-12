@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
-import { Account } from "./pages/Account";
+import { AccountInformation } from "./pages/account/AccountInformation";
+import { AccountSettings } from "./pages/account/AccountSettings";
+import { GeneralSettings } from "./pages/account/GeneralSettings";
 import { Categories } from "./pages/Categories";
 import { Dashboard } from "./pages/Dashboard";
 import { Import } from "./pages/Import";
 import { Transactions } from "./pages/Transactions";
+import { useSyncTheme } from "./lib/theme";
 
 // Grace period so the mouse can travel from the toggle to the sidebar (and back)
 // without it closing in between.
@@ -21,6 +24,7 @@ function SidebarIcon() {
 }
 
 export function App() {
+  useSyncTheme();
   const [open, setOpen] = useState(false);
   // "hover": opened by mouse, closes when the mouse leaves.
   // "click": opened by touch or keyboard, closes on tap outside, Escape or navigation.
@@ -113,7 +117,11 @@ export function App() {
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/import" element={<Import />} />
             <Route path="/categories" element={<Categories />} />
-            <Route path="/account" element={<Account />} />
+            <Route path="/account" element={<AccountSettings />}>
+              <Route index element={<Navigate to="general" replace />} />
+              <Route path="general" element={<GeneralSettings />} />
+              <Route path="information" element={<AccountInformation />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

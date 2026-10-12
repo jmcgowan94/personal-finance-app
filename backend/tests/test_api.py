@@ -173,3 +173,13 @@ def test_profiles_are_per_user(clients):
     alice.patch("/api/me", json={"first_name": "Alice"})
     assert bob.get("/api/me").json()["first_name"] is None
     assert alice.get("/api/me").json()["first_name"] == "Alice"
+
+
+def test_theme_preference(client):
+    assert client.get("/api/me").json()["theme"] is None  # follow the device by default
+    assert client.patch("/api/me", json={"theme": "dark"}).json()["theme"] == "dark"
+    # Updating names leaves the theme alone.
+    client.patch("/api/me", json={"first_name": "Ada"})
+    assert client.get("/api/me").json()["theme"] == "dark"
+    assert client.patch("/api/me", json={"theme": None}).json()["theme"] is None
+    assert client.patch("/api/me", json={"theme": "blue"}).status_code == 422

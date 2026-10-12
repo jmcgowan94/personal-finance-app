@@ -23,28 +23,28 @@
   --font: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) {
-    color-scheme: dark;
-    --page: #0d0d0d;
-    --surface: #1a1a19;
-    --surface-raised: #222220;
-    --text-primary: #f0efec;
-    --text-secondary: #c3c2b7;
-    --text-muted: #9c9b94;
-    --axis-text: #898781;
-    --grid: #2c2c2a;
-    --baseline: #383835;
-    --border: rgba(255, 255, 255, 0.1);
-    --hover: rgba(255, 255, 255, 0.05);
-    --accent: #3987e5;
-    --positive-text: #0ca30c;
-    --critical: #e66767;
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --series-3: #199e70;
-    --series-1-wash: rgba(57, 135, 229, 0.12);
-  }
+/* Dark theme. index.html sets data-theme before the first paint (from the saved
+   choice, or the device setting), so there is no flash of the wrong theme. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-raised: #222220;
+  --text-primary: #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted: #9c9b94;
+  --axis-text: #898781;
+  --grid: #2c2c2a;
+  --baseline: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+  --hover: rgba(255, 255, 255, 0.05);
+  --accent: #3987e5;
+  --positive-text: #0ca30c;
+  --critical: #e66767;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-1-wash: rgba(57, 135, 229, 0.12);
 }
 
 * { box-sizing: border-box; }
@@ -98,6 +98,40 @@ h2 { font-size: 15px; font-weight: 600; margin: 0; }
 .icon-button:hover:not(:disabled) { color: var(--text-primary); }
 
 .layout { display: flex; align-items: flex-start; }
+
+/* ---- Account settings ---- */
+.settings-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; align-items: start; }
+.settings-nav { position: sticky; top: 80px; }
+
+.switch-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.switch-row p { margin: 2px 0 0; }
+.switch {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 24px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--baseline);
+  transition: background 0.15s;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s;
+}
+.switch[aria-checked="true"]::after { transform: translateX(20px); }
+/* Listed with :hover so the generic button hover background doesn't override them. */
+.switch:hover:not(:disabled) { background: var(--baseline); filter: brightness(1.05); }
+.switch[aria-checked="true"], .switch[aria-checked="true"]:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); }
 
 .sidebar {
   /* A flyout over the page, so opening it never shifts the content. */
@@ -153,7 +187,8 @@ main { flex: 1; min-width: 0; max-width: 1120px; margin: 0 auto; padding: 24px; 
 .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
 
 @media (max-width: 800px) {
-  .grid-2, .tiles { grid-template-columns: 1fr; }
+  .grid-2, .tiles, .settings-layout { grid-template-columns: 1fr; }
+  .settings-nav { position: static; flex-direction: row; overflow-x: auto; }
   main { padding: 16px; }
   .topbar { padding: 0 8px; }
 }

@@ -19,11 +19,14 @@ class UserOut(ORM):
     email: str | None
     first_name: str | None
     last_name: str | None
+    theme: str | None
 
 
 class UserPatch(BaseModel):
     first_name: str | None = Field(default=None, max_length=100)
     last_name: str | None = Field(default=None, max_length=100)
+    # null = follow the device's light/dark setting
+    theme: Literal["light", "dark"] | None = None
 
 
 class AccountIn(BaseModel):

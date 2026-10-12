@@ -24,7 +24,7 @@ export const useMe = () => useQuery({ queryKey: ["me"], queryFn: () => api.get<U
 export function useUpdateMe() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { first_name: string; last_name: string }) => api.patch<User>("/me", body),
+    mutationFn: (body: Partial<Pick<User, "first_name" | "last_name" | "theme">>) => api.patch<User>("/me", body),
     onSuccess: (user) => qc.setQueryData(["me"], user),
   });
 }

@@ -46,6 +46,8 @@ class User(Base):
     email: Mapped[str | None] = mapped_column(String(320))
     first_name: Mapped[str | None] = mapped_column(String(100))
     last_name: Mapped[str | None] = mapped_column(String(100))
+    # "light" | "dark"; null means follow the device's setting.
+    theme: Mapped[str | None] = mapped_column(String(10))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

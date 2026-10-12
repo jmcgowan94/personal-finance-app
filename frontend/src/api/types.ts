@@ -9,7 +9,11 @@ export interface User {
   email: string | null;
   first_name: string | null;
   last_name: string | null;
+  /** null = follow the device's light/dark setting */
+  theme: ThemePreference;
 }
+
+export type ThemePreference = "light" | "dark" | null;
 
 export interface Account {
   id: number;
