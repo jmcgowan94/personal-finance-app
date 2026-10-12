@@ -65,7 +65,7 @@ export function Dashboard() {
           <div className="stack">
             <ChartCard
               title="Income vs. spending"
-              subtitle="Per month, excluding transfers between accounts"
+              subtitle="Per month, excluding transfers between accounts. The line is your total balance at each month's end."
               table={
                 <table>
                   <thead>
@@ -74,6 +74,7 @@ export function Dashboard() {
                       <th className="num">Income</th>
                       <th className="num">Spending</th>
                       <th className="num">Net</th>
+                      <th className="num">Balance (month end)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -83,6 +84,7 @@ export function Dashboard() {
                         <td className="num">{formatMoney(m.income)}</td>
                         <td className="num">{formatMoney(m.spending)}</td>
                         <td className="num">{formatMoney(m.net)}</td>
+                        <td className="num">{m.end_balance === null ? "–" : formatMoney(m.end_balance)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -127,7 +129,7 @@ export function Dashboard() {
 
               <ChartCard
                 title="Balance"
-                subtitle="End-of-day balance from your statements"
+                subtitle="End-of-day balance from your statements, by the bank's posting date"
                 table={
                   <table>
                     <thead>

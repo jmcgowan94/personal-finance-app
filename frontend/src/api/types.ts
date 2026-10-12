@@ -98,6 +98,8 @@ export interface MonthlyPoint {
   income: string;
   spending: string;
   net: string;
+  /** Total balance at month end (accounts that report one); null if none yet */
+  end_balance: string | null;
 }
 
 export interface CategorySpend {

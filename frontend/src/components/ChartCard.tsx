@@ -51,12 +51,15 @@ export function ChartTooltip({ title, rows }: { title: string; rows: { label: st
   );
 }
 
-export function Legend({ items }: { items: { label: string; color: string }[] }) {
+export function Legend({ items }: { items: { label: string; color: string; shape?: "box" | "line" }[] }) {
   return (
     <div className="legend">
       {items.map((item) => (
         <span key={item.label}>
-          <span className="legend-key" style={{ background: item.color }} />
+          <span
+            className={item.shape === "line" ? "legend-key legend-key-line" : "legend-key"}
+            style={{ background: item.color }}
+          />
           {item.label}
         </span>
       ))}

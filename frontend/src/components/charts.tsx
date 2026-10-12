@@ -4,7 +4,9 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  ComposedChart,
   LabelList,
+  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -19,28 +21,38 @@ const AXIS = { stroke: "var(--baseline)", tick: { fill: "var(--axis-text)", font
 const GRID = { stroke: "var(--grid)", strokeDasharray: undefined };
 const INCOME = "var(--series-1)";
 const SPENDING = "var(--series-2)";
+const BALANCE = "var(--series-3)";
 
+/** Income and spending bars per month, with the month-end total balance as a line.
+ *  All three are dollars, so they share one axis. */
 export function MonthlyChart({ data }: { data: MonthlyPoint[] }) {
-  const rows = data.map((d) => ({ ...d, income: toNumber(d.income), spending: toNumber(d.spending) }));
+  const rows = data.map((d) => ({
+    ...d,
+    income: toNumber(d.income),
+    spending: toNumber(d.spending),
+    end_balance: d.end_balance === null ? null : toNumber(d.end_balance),
+  }));
+  const hasBalance = rows.some((r) => r.end_balance !== null);
   return (
     <>
       <Legend
         items={[
           { label: "Income", color: INCOME },
           { label: "Spending", color: SPENDING },
+          ...(hasBalance ? [{ label: "Balance (month end)", color: BALANCE, shape: "line" as const }] : []),
         ]}
       />
       <div className="chart-body">
         <ResponsiveContainer>
-          <BarChart data={rows} barGap={2} barSize={rows.length > 12 ? 8 : 20} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <ComposedChart data={rows} barGap={2} barSize={rows.length > 12 ? 8 : 20} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} {...GRID} />
             <XAxis dataKey="month" tickFormatter={(m) => formatMonth(m)} {...AXIS} />
             <YAxis tickFormatter={formatMoneyCompact} width={56} axisLine={false} {...AXIS} />
             <Tooltip
-              cursor={{ fill: "var(--hover)" }}
+              cursor={{ fill: "var(--hover)", stroke: "var(--baseline)" }}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null;
-                const p = payload[0].payload as MonthlyPoint & { income: number; spending: number };
+                const p = payload[0].payload as (typeof rows)[number];
                 return (
                   <ChartTooltip
                     title={formatMonth(p.month, "long")}
@@ -48,6 +60,9 @@ export function MonthlyChart({ data }: { data: MonthlyPoint[] }) {
                       { label: "Income", value: formatMoney(p.income), color: INCOME },
                       { label: "Spending", value: formatMoney(p.spending), color: SPENDING },
                       { label: "Net", value: formatMoney(p.net) },
+                      ...(p.end_balance !== null
+                        ? [{ label: "Balance (month end)", value: formatMoney(p.end_balance), color: BALANCE }]
+                        : []),
                     ]}
                   />
                 );
@@ -55,7 +70,19 @@ export function MonthlyChart({ data }: { data: MonthlyPoint[] }) {
             />
             <Bar isAnimationActive={false} dataKey="income" name="Income" fill={INCOME} radius={[4, 4, 0, 0]} />
             <Bar isAnimationActive={false} dataKey="spending" name="Spending" fill={SPENDING} radius={[4, 4, 0, 0]} />
-          </BarChart>
+            {hasBalance && (
+              <Line
+                isAnimationActive={false}
+                type="linear"
+                dataKey="end_balance"
+                name="Balance (month end)"
+                stroke={BALANCE}
+                strokeWidth={2}
+                dot={{ r: 4, fill: BALANCE, stroke: "var(--surface)", strokeWidth: 2 }}
+                activeDot={{ r: 5, fill: BALANCE, stroke: "var(--surface)", strokeWidth: 2 }}
+              />
+            )}
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </>

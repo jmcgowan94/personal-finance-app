@@ -162,6 +162,9 @@ class MonthlyPoint(BaseModel):
     income: Decimal
     spending: Decimal
     net: Decimal
+    # Total balance at month end (as counted by use date) across accounts that
+    # report one; null if none yet
+    end_balance: Decimal | None
 
 
 class CategorySpend(BaseModel):

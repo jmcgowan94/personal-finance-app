@@ -61,7 +61,7 @@ In Chase online banking, open the account, choose **Download account activity**,
 Notes on the numbers:
 - **Transfers** (categories of kind "Transfer", e.g. credit card payments and moves to savings) are left out of income and spending, so money isn't counted twice.
 - **Income** is money in and **spending** is money out, both after excluding transfers. A refund therefore counts as money in.
-- **Use Date vs. Posting Date.** Totals, charts and date filters use each transaction's **Use Date**, which starts as the bank's **Posting Date**. You can change it on the Transactions page, e.g. to count a paycheck paid early for a weekend in the month it was meant for. The balance chart and duplicate detection always use the Posting Date.
+- **Use Date vs. Posting Date.** Totals, charts and date filters use each transaction's **Use Date**, which starts as the bank's **Posting Date**. You can change it on the Transactions page, e.g. to count a paycheck paid early for a weekend in the month it was meant for. The month-end balance line on the Income vs. spending chart is shifted to match: a paycheck counted in June raises June's balance even if it posted July 1. The separate Balance chart (the bank's day-by-day balance) and duplicate detection always use the Posting Date.
 - **Duplicates.** A transaction is identified by account, date, amount, description and balance (plus its position among identical same-day rows), so re-importing a statement never double-counts.
 - **Deleting an import** removes the transactions it added.
 - **Categories you set by hand** are marked "manual", and **Re-apply rules** leaves them alone.

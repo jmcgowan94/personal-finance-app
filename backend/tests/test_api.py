@@ -272,3 +272,45 @@ def test_cannot_change_another_users_use_date(clients):
     txn = alice.get("/api/transactions").json()["items"][0]
     assert bob.patch(f"/api/transactions/{txn['id']}", json={"use_date": "2020-01-01"}).status_code == 404
     assert alice.get("/api/transactions").json()["items"][0]["use_date"] == txn["use_date"]
+
+
+def test_monthly_end_balance(client):
+    upload(client, "chase_checking.csv")
+    _, card = upload(client, "chase_credit.csv", account_name="Card", account_type="credit")
+    monthly = {m["month"]: m["end_balance"] for m in client.get("/api/analytics/monthly").json()}
+    # Last checking balance of each month; the credit card reports no balance.
+    assert monthly == {"2026-01": "1714.00", "2026-02": "4176.90"}
+
+    # A month with activity but no new balance carries the last one forward.
+    netflix = client.get("/api/transactions", params={"q": "NETFLIX"}).json()["items"][0]
+    client.patch(f"/api/transactions/{netflix['id']}", json={"use_date": "2026-03-05"})
+    monthly = {m["month"]: m["end_balance"] for m in client.get("/api/analytics/monthly").json()}
+    assert monthly["2026-03"] == "4176.90"
+
+    # Filtered to an account without balances: no balance line.
+    card_only = client.get("/api/analytics/monthly", params={"account_id": card["id"]}).json()
+    assert {m["end_balance"] for m in card_only} == {None}
+
+
+def test_month_end_balance_follows_use_dates(client):
+    upload(client, "chase_checking.csv")
+    txns = client.get("/api/transactions", params={"page_size": 100}).json()["items"]
+    feb_pay = next(t for t in txns if t["description"].startswith("ACME") and t["posting_date"] == "2026-02-01")
+    coffee = next(t for t in txns if t["description"].startswith("STARBUCKS"))
+
+    def end_balances():
+        return {m["month"]: m["end_balance"] for m in client.get("/api/analytics/monthly").json()}
+
+    assert end_balances() == {"2026-01": "1714.00", "2026-02": "4176.90"}
+
+    # Paycheck posted Feb 1 but counted in January: January's balance includes it.
+    client.patch(f"/api/transactions/{feb_pay['id']}", json={"use_date": "2026-01-31"})
+    assert end_balances() == {"2026-01": "4214.00", "2026-02": "4176.90"}
+
+    # A Jan 31 coffee counted in February comes out of January's balance.
+    client.patch(f"/api/transactions/{coffee['id']}", json={"use_date": "2026-02-02"})
+    assert end_balances() == {"2026-01": "4218.50", "2026-02": "4176.90"}
+
+    # The day-by-day balance chart still shows the bank's actual balances.
+    points = {p["date"]: p["balance"] for p in client.get("/api/analytics/balance").json()[0]["points"]}
+    assert points["2026-01-31"] == "1714.00"

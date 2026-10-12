@@ -226,6 +226,7 @@ button.link { border: none; background: none; padding: 0; height: auto; color: v
 
 .legend { display: flex; gap: 16px; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
 .legend-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.legend-key-line { width: 14px; height: 2px; border-radius: 1px; vertical-align: 3px; }
 
 .tooltip {
   background: var(--surface-raised);
