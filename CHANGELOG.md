@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0 (2026-10-12)
+
+- Overlay month-end balance on the income vs. spending chart
+
 ## v0.4.0 (2026-10-12)
 
 - Add adjustable Use Date alongside the bank's Posting Date
