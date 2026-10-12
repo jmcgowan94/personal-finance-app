@@ -14,10 +14,6 @@ export function resolveTheme(pref: ThemePreference): Theme {
   return pref ?? (window.matchMedia(DEVICE_DARK).matches ? "dark" : "light");
 }
 
-export function currentTheme(): Theme {
-  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-}
-
 export function applyTheme(pref: ThemePreference) {
   document.documentElement.dataset.theme = resolveTheme(pref);
   try {

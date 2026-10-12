@@ -1,14 +1,20 @@
 import { useMe, useUpdateMe } from "../../api/hooks";
-import { applyTheme, currentTheme, resolveTheme } from "../../lib/theme";
+import type { ThemePreference } from "../../api/types";
+import { applyTheme } from "../../lib/theme";
+
+const THEME_OPTIONS: { value: string; label: string; pref: ThemePreference }[] = [
+  { value: "system", label: "Use System Settings", pref: null },
+  { value: "light", label: "Light Mode", pref: "light" },
+  { value: "dark", label: "Dark Mode", pref: "dark" },
+];
 
 export function GeneralSettings() {
   const { data: me } = useMe();
   const update = useUpdateMe();
-  const dark = (me ? resolveTheme(me.theme) : currentTheme()) === "dark";
 
-  function setDark(next: boolean) {
+  function setTheme(value: string) {
+    const theme = THEME_OPTIONS.find((o) => o.value === value)?.pref ?? null;
     const previous = me?.theme ?? null;
-    const theme = next ? "dark" : "light";
     applyTheme(theme); // switch immediately; the account save follows
     update.mutate({ theme }, { onError: () => applyTheme(previous) });
   }
@@ -16,22 +22,15 @@ export function GeneralSettings() {
   return (
     <section className="card">
       <h2>General Settings</h2>
-      <div className="switch-row" style={{ marginTop: 16 }}>
-        <div>
-          <div id="dark-mode-label">Dark mode</div>
-          <p className="muted">
-            {me?.theme === null ? "Currently following your device's setting." : "Applies to the whole app."}
-          </p>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          className="switch"
-          aria-checked={dark}
-          aria-labelledby="dark-mode-label"
-          disabled={!me}
-          onClick={() => setDark(!dark)}
-        />
+      <div className="setting-row" style={{ marginTop: 16 }}>
+        <label htmlFor="theme">Theme</label>
+        <select id="theme" value={me?.theme ?? "system"} disabled={!me} onChange={(e) => setTheme(e.target.value)}>
+          {THEME_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
       </div>
       {update.isError && <p className="error">Could not save: {update.error.message}</p>}
     </section>
