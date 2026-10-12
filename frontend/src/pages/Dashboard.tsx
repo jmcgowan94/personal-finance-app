@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
-import { useBalance, useByCategory, useMonthly, useSummary } from "../api/hooks";
+import { useBalance, useByCategory, useMe, useMonthly, useSummary } from "../api/hooks";
 import { ChartCard } from "../components/ChartCard";
 import { BalanceChart, CategoryChart, MonthlyChart } from "../components/charts";
 import { FiltersBar } from "../components/FiltersBar";
@@ -24,6 +24,9 @@ export function Dashboard() {
   const monthly = useMonthly(filters);
   const byCategory = useByCategory(filters);
   const balance = useBalance(filters);
+  const { data: me } = useMe();
+  // Greets by first name (from Account Information); empty until loaded so it doesn't flicker.
+  const greeting = me ? `Hi ${me.first_name ?? "there"}` : "\u00a0";
 
   if (summary.isError) return <p className="error">Could not load data: {summary.error.message}</p>;
 
@@ -33,7 +36,7 @@ export function Dashboard() {
   return (
     <>
       <div className="page-header">
-        <h1>Dashboard</h1>
+        <h1>{greeting}</h1>
         <FiltersBar />
       </div>
 
