@@ -14,13 +14,15 @@ export function Transactions() {
   const categoryParam = searchParams.get("category");
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
-  const [page, setPage] = useState(1);
+  // Pages run oldest -> newest, but the API pages newest-first. Track how many
+  // pages back from the newest we are (0 = most recent, where the page opens).
+  const [stepsBack, setStepsBack] = useState(0);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(search.trim()), 250);
     return () => clearTimeout(t);
   }, [search]);
-  useEffect(() => setPage(1), [debounced, categoryParam, filters]);
+  useEffect(() => setStepsBack(0), [debounced, categoryParam, filters]);
 
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
@@ -32,11 +34,14 @@ export function Transactions() {
     account_id: filters.accountId ?? undefined,
     category_id: categoryParam === null ? undefined : Number(categoryParam),
     q: debounced || undefined,
-    page,
+    page: stepsBack + 1,
     page_size: PAGE_SIZE,
   }, ready);
 
   const pages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
+  const page = pages - stepsBack; // chronological page number shown to the user
+  // Oldest at the top, so time runs down the page and forward through the pages.
+  const rows = data ? [...data.items].reverse() : [];
 
   return (
     <>
@@ -87,7 +92,7 @@ export function Transactions() {
               </tr>
             </thead>
             <tbody>
-              {data?.items.map((t) => (
+              {rows.map((t) => (
                 <tr key={t.id}>
                   <td className="date">{formatDate(t.posted_date)}</td>
                   <td className="desc">
@@ -135,10 +140,10 @@ export function Transactions() {
               {data.total.toLocaleString()} transactions · page {page} of {pages}
             </span>
             <div className="toolbar">
-              <button className="small" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+              <button className="small" disabled={page <= 1} onClick={() => setStepsBack(stepsBack + 1)}>
                 Previous
               </button>
-              <button className="small" disabled={page >= pages} onClick={() => setPage(page + 1)}>
+              <button className="small" disabled={stepsBack === 0} onClick={() => setStepsBack(stepsBack - 1)}>
                 Next
               </button>
             </div>
