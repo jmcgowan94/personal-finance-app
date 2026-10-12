@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.0 (2026-10-12)
+
+- Add Default Account setting; make SQLite migrations data-safe
+
 ## v0.2.0 (2026-10-12)
 
 - Show running version in sidebar; add release tooling
