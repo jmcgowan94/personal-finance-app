@@ -8,7 +8,7 @@ import { Categories } from "./pages/Categories";
 import { Dashboard } from "./pages/Dashboard";
 import { Import } from "./pages/Import";
 import { Transactions } from "./pages/Transactions";
-import { useMe } from "./api/hooks";
+import { useMe, useVersion } from "./api/hooks";
 import { FiltersProvider } from "./lib/filters";
 import { useSyncTheme } from "./lib/theme";
 
@@ -28,6 +28,7 @@ function SidebarIcon() {
 export function App() {
   useSyncTheme();
   const me = useMe();
+  const { data: version } = useVersion();
   const [open, setOpen] = useState(false);
   // "hover": opened by mouse, closes when the mouse leaves.
   // "click": opened by touch or keyboard, closes on tap outside, Escape or navigation.
@@ -111,6 +112,15 @@ export function App() {
           </nav>
           <nav className="nav sidebar-footer" aria-label="Account">
             <NavLink to="/account">Account Settings</NavLink>
+            {version && (
+              <div
+                className="app-version"
+                title={`Version ${version.version}${version.commit ? `, commit ${version.commit}` : ""}`}
+              >
+                v{version.version}
+                {version.commit && ` · ${version.commit}`}
+              </div>
+            )}
           </nav>
         </aside>
         {open && mode === "click" && <div className="scrim" onClick={() => setOpen(false)} />}

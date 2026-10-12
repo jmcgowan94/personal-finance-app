@@ -1,4 +1,4 @@
-.PHONY: setup dev backend frontend migrate test seed-demo demo-csvs up down
+.PHONY: setup dev backend frontend migrate test seed-demo demo-csvs up down release-patch release-minor release-major
 
 setup:            ## Install backend and frontend dependencies
 	cd backend && uv sync
@@ -34,3 +34,12 @@ up:               ## Run everything in Docker (Postgres instead of SQLite)
 
 down:
 	docker compose down
+
+release-patch:    ## Release a bug-fix version (x.y.Z), tag and push
+	scripts/release.sh patch
+
+release-minor:    ## Release a feature version (x.Y.0), tag and push
+	scripts/release.sh minor
+
+release-major:    ## Release a breaking version (X.0.0), tag and push
+	scripts/release.sh major

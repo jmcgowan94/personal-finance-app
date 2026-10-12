@@ -198,3 +198,16 @@ def test_unknown_fields_are_rejected(client):
     assert resp.status_code == 422
     assert client.get("/api/me").json()["first_name"] is None  # nothing was saved
     assert client.post("/api/accounts", json={"name": "Checking", "colour": "red"}).status_code == 422
+
+
+def test_version_reports_running_code(client, monkeypatch):
+    from app import version as v
+
+    body = client.get("/api/version").json()
+    assert body["version"] == v.app_version()
+    assert body["commit"] is None or len(body["commit"]) == 7
+
+    v.app_commit.cache_clear()
+    monkeypatch.setenv("APP_COMMIT", "0123456789abcdef")
+    assert v.app_commit() == "0123456"
+    v.app_commit.cache_clear()

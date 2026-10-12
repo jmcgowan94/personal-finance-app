@@ -30,6 +30,14 @@ export function useUpdateMe() {
   });
 }
 
+/** Version of the code the server is running; it can't change without a restart. */
+export const useVersion = () =>
+  useQuery({
+    queryKey: ["version"],
+    queryFn: () => api.get<{ version: string; commit: string | null }>("/version"),
+    staleTime: Infinity,
+  });
+
 export const useAccounts = () => useQuery({ queryKey: ["accounts"], queryFn: () => api.get<Account[]>("/accounts") });
 export const useParsers = () => useQuery({ queryKey: ["parsers"], queryFn: () => api.get<Parser[]>("/parsers") });
 export const useUploads = () => useQuery({ queryKey: ["uploads"], queryFn: () => api.get<Upload[]>("/uploads") });

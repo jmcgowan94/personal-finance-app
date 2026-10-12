@@ -4,10 +4,11 @@ from fastapi.responses import FileResponse
 
 from app.config import REPO_ROOT, get_settings
 from app.routers import accounts, analytics, categories, me, transactions, uploads
+from app.version import app_commit, app_version
 
 settings = get_settings()
 
-app = FastAPI(title="Personal Finance API", version="0.1.0")
+app = FastAPI(title="Personal Finance API", version=app_version())
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -21,6 +22,12 @@ api = APIRouter(prefix="/api")
 @api.get("/health", tags=["health"])
 def health():
     return {"status": "ok"}
+
+
+@api.get("/version", tags=["health"])
+def version():
+    """The version and git commit of the code this server is running."""
+    return {"version": app_version(), "commit": app_commit()}
 
 
 for module in (me, accounts, uploads, transactions, categories, analytics):

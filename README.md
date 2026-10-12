@@ -73,6 +73,22 @@ Configuration is entirely through environment variables; see [.env.example](.env
 make test         # backend pytest + frontend type-check
 ```
 
+## Versions and releases
+
+The app follows [semantic versioning](https://semver.org): **major.minor.patch**.
+
+| Change | Bump | Command |
+|---|---|---|
+| Bug fixes only | patch: 0.2.0 → 0.2.1 | `make release-patch` |
+| New features | minor: 0.2.1 → 0.3.0 | `make release-minor` |
+| Breaking changes (e.g. data that older versions can't read) | major: 0.3.0 → 1.0.0 | `make release-major` |
+
+The version stays below 1.0 until the hosted, multi-user version is live.
+
+A release bumps the version in `backend/pyproject.toml` (the source of truth) and its mirrors, adds the commits since the last release to [CHANGELOG.md](CHANGELOG.md), commits, tags `vX.Y.Z` and pushes. Run it from an up-to-date `main` with no uncommitted changes.
+
+The sidebar shows the version and commit the running server was started from (e.g. `v0.2.0 · 1a2b3c4`). If that's older than the latest release, restart the app.
+
 ## Adding a bank format
 
 Create a parser in `backend/app/parsers/`, such as `mybank.py`:
