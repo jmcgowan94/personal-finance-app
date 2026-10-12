@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import { UserMenu } from "./components/UserMenu";
@@ -8,29 +8,9 @@ import { Dashboard } from "./pages/Dashboard";
 import { Import } from "./pages/Import";
 import { Transactions } from "./pages/Transactions";
 
-const NARROW = "(max-width: 800px)";
-const SIDEBAR_KEY = "sidebar-open";
-
-function useIsNarrow() {
-  const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW).matches);
-  useEffect(() => {
-    const mq = window.matchMedia(NARROW);
-    const onChange = () => setNarrow(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return narrow;
-}
-
-/** Desktop remembers the viewer's choice; small screens start closed. */
-function initialSidebarOpen(): boolean {
-  if (window.matchMedia(NARROW).matches) return false;
-  try {
-    return localStorage.getItem(SIDEBAR_KEY) !== "false";
-  } catch {
-    return true;
-  }
-}
+// Grace period so the mouse can travel from the toggle to the sidebar (and back)
+// without it closing in between.
+const CLOSE_DELAY_MS = 200;
 
 function SidebarIcon() {
   return (
@@ -42,26 +22,49 @@ function SidebarIcon() {
 }
 
 export function App() {
-  const narrow = useIsNarrow();
-  const [open, setOpen] = useState(initialSidebarOpen);
+  const [open, setOpen] = useState(false);
+  // "hover": opened by mouse, closes when the mouse leaves.
+  // "click": opened by touch or keyboard, closes on tap outside, Escape or navigation.
+  const [mode, setMode] = useState<"hover" | "click">("hover");
+  const closeTimer = useRef<number | undefined>(undefined);
+  const lastPointer = useRef("");
   const location = useLocation();
 
-  // On small screens the sidebar covers the page, so close it after navigating.
-  useEffect(() => {
-    if (narrow) setOpen(false);
-  }, [location.pathname, narrow]);
+  const cancelClose = () => window.clearTimeout(closeTimer.current);
+  useEffect(() => cancelClose, []);
 
-  function toggle() {
-    const next = !open;
-    setOpen(next);
-    if (!narrow) {
-      try {
-        localStorage.setItem(SIDEBAR_KEY, String(next));
-      } catch {
-        // Storage unavailable (e.g. private mode); the choice just isn't remembered.
-      }
-    }
+  function openOnHover(e: PointerEvent) {
+    if (e.pointerType !== "mouse") return;
+    cancelClose();
+    setMode("hover");
+    setOpen(true);
   }
+
+  function closeOnLeave(e: PointerEvent) {
+    if (e.pointerType !== "mouse" || mode !== "hover") return;
+    cancelClose();
+    closeTimer.current = window.setTimeout(() => setOpen(false), CLOSE_DELAY_MS);
+  }
+
+  function onToggleClick() {
+    // Mouse users are handled by hover; clicks only matter for touch and keyboard.
+    const pointer = lastPointer.current;
+    lastPointer.current = "";
+    if (pointer === "mouse") return;
+    setMode("click");
+    setOpen((o) => !o);
+  }
+
+  useEffect(() => {
+    if (mode === "click") setOpen(false);
+  }, [location.pathname]); // only on navigation, not when mode changes
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   return (
     <>
@@ -70,10 +73,12 @@ export function App() {
           <button
             className="icon-button"
             aria-label={open ? "Hide menu" : "Show menu"}
-            title={open ? "Hide menu" : "Show menu"}
             aria-expanded={open}
             aria-controls="sidebar"
-            onClick={toggle}
+            onPointerDown={(e) => (lastPointer.current = e.pointerType)}
+            onPointerEnter={openOnHover}
+            onPointerLeave={closeOnLeave}
+            onClick={onToggleClick}
           >
             <SidebarIcon />
           </button>
@@ -84,7 +89,13 @@ export function App() {
         <UserMenu />
       </header>
       <div className="layout">
-        <aside id="sidebar" className="sidebar" hidden={!open}>
+        <aside
+          id="sidebar"
+          className="sidebar"
+          hidden={!open}
+          onPointerEnter={(e) => e.pointerType === "mouse" && cancelClose()}
+          onPointerLeave={closeOnLeave}
+        >
           <nav className="nav" aria-label="Main">
             <NavLink to="/" end>
               Dashboard
@@ -94,7 +105,7 @@ export function App() {
             <NavLink to="/categories">Categories</NavLink>
           </nav>
         </aside>
-        {open && narrow && <div className="scrim" onClick={() => setOpen(false)} />}
+        {open && mode === "click" && <div className="scrim" onClick={() => setOpen(false)} />}
         <main>
           <Routes>
             <Route path="/" element={<Dashboard />} />
