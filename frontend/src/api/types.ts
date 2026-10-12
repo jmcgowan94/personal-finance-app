@@ -4,6 +4,13 @@ export type AccountType = "checking" | "savings" | "credit" | "other";
 export type CategoryKind = "expense" | "income" | "transfer";
 export type MatchType = "contains" | "regex";
 
+export interface User {
+  id: number;
+  email: string | null;
+  first_name: string | null;
+  last_name: string | null;
+}
+
 export interface Account {
   id: number;
   name: string;

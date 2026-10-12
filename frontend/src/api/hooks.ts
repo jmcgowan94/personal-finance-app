@@ -16,7 +16,18 @@ import type {
   Summary,
   TransactionPage,
   Upload,
+  User,
 } from "./types";
+
+export const useMe = () => useQuery({ queryKey: ["me"], queryFn: () => api.get<User>("/me") });
+
+export function useUpdateMe() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { first_name: string; last_name: string }) => api.patch<User>("/me", body),
+    onSuccess: (user) => qc.setQueryData(["me"], user),
+  });
+}
 
 export const useAccounts = () => useQuery({ queryKey: ["accounts"], queryFn: () => api.get<Account[]>("/accounts") });
 export const useParsers = () => useQuery({ queryKey: ["parsers"], queryFn: () => api.get<Parser[]>("/parsers") });

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
+import { UserMenu } from "./components/UserMenu";
+import { Account } from "./pages/Account";
 import { Categories } from "./pages/Categories";
 import { Dashboard } from "./pages/Dashboard";
 import { Import } from "./pages/Import";
@@ -74,6 +76,7 @@ export function App() {
         >
           <SidebarIcon />
         </button>
+        <UserMenu />
       </header>
       <div className="layout">
         <aside id="sidebar" className="sidebar" hidden={!open}>
@@ -93,6 +96,7 @@ export function App() {
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/import" element={<Import />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/account" element={<Account />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

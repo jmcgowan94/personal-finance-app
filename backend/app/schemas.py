@@ -14,6 +14,18 @@ CategoryKind = Literal["expense", "income", "transfer"]
 MatchType = Literal["contains", "regex"]
 
 
+class UserOut(ORM):
+    id: int
+    email: str | None
+    first_name: str | None
+    last_name: str | None
+
+
+class UserPatch(BaseModel):
+    first_name: str | None = Field(default=None, max_length=100)
+    last_name: str | None = Field(default=None, max_length=100)
+
+
 class AccountIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     institution: str = Field(default="", max_length=100)

@@ -150,3 +150,26 @@ def test_users_cannot_see_or_touch_each_others_data(clients):
     # The same statement imports independently for each user.
     assert alice.get("/api/transactions").json()["total"] == 9
     assert bob.get("/api/transactions").json()["total"] == 9
+
+
+def test_profile_defaults_empty_and_can_be_updated(client):
+    me = client.get("/api/me").json()
+    assert (me["first_name"], me["last_name"]) == (None, None)
+
+    resp = client.patch("/api/me", json={"first_name": "  Ada ", "last_name": "Lovelace"})
+    assert resp.status_code == 200
+    assert (resp.json()["first_name"], resp.json()["last_name"]) == ("Ada", "Lovelace")
+
+    # Partial update leaves the other field alone; blank clears it.
+    client.patch("/api/me", json={"last_name": ""})
+    me = client.get("/api/me").json()
+    assert (me["first_name"], me["last_name"]) == ("Ada", None)
+
+    assert client.patch("/api/me", json={"first_name": "x" * 101}).status_code == 422
+
+
+def test_profiles_are_per_user(clients):
+    alice, bob = clients("alice"), clients("bob")
+    alice.patch("/api/me", json={"first_name": "Alice"})
+    assert bob.get("/api/me").json()["first_name"] is None
+    assert alice.get("/api/me").json()["first_name"] == "Alice"

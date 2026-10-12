@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from app.config import REPO_ROOT, get_settings
-from app.routers import accounts, analytics, categories, transactions, uploads
+from app.routers import accounts, analytics, categories, me, transactions, uploads
 
 settings = get_settings()
 
@@ -23,7 +23,7 @@ def health():
     return {"status": "ok"}
 
 
-for module in (accounts, uploads, transactions, categories, analytics):
+for module in (me, accounts, uploads, transactions, categories, analytics):
     api.include_router(module.router)
 app.include_router(api)
 
